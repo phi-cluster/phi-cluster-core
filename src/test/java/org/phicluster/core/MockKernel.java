@@ -1,19 +1,16 @@
 package org.phicluster.core;
 
-import java.util.List;
-
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.data.Stat;
-import org.phicluster.core.DistJobState;
-import org.phicluster.core.DistTaskPool;
-import org.phicluster.core.Kernel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class MockKernel extends Kernel {
-    public static final String ZOOKEEPER_FOR_UNIT_TEST = "127.0.0.1:2181";
+    public static final String ZOOKEEPER_FOR_UNIT_TEST = "localhost:2181";
     //    public static final String ZOOKEEPER_FOR_UNIT_TEST = "15.185.228.137:2181";
-    public static final String GEARMAN_SERVER_IP = "15.185.228.137";
+    public static final String GEARMAN_SERVER_IP = "localhost";
     public static final int GEARMAN_SERVER_PORT = 4730;
 
     protected static final Logger logger = LoggerFactory.getLogger(MockKernel.class);

@@ -1,4 +1,4 @@
-package nettyserver;
+package org.phicluster.nettyserver;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -10,11 +10,11 @@ import org.jboss.netty.util.CharsetUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.*;
-import org.phicluster.nettyserver.ClusterHttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 
 public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
@@ -29,6 +29,8 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
     private ChannelFuture channel;
     private JSONObject jsonObject;
     private ChannelBuffer content;
+
+    private CountDownLatch afterMessageReceived = new CountDownLatch(1);
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -68,6 +70,29 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
     }
 
     @Test
+    public void testPerformNoJson() {
+        HttpRequest request = new DefaultHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.POST, "http://" + HOSTNAME + "/post_path");
+
+        content = ChannelBuffers.copiedBuffer("", CharsetUtil.UTF_8);
+
+        setHeadersAndContent(request);
+
+        logger.info("sending request, and waiting close...");
+
+        channel.getChannel().write(request).awaitUninterruptibly();
+        channel.getChannel().getCloseFuture().awaitUninterruptibly();
+
+        Assert.assertTrue(channel.isDone());
+
+        try {
+            afterMessageReceived.await();
+        } catch (InterruptedException e) {
+            //
+        }
+    }
+
+    @Test
     public void testPerformPost() {
         HttpRequest request = new DefaultHttpRequest(
                 HttpVersion.HTTP_1_1, HttpMethod.POST, "http://" + HOSTNAME + "/post_path");
@@ -84,31 +109,42 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
         channel.getChannel().getCloseFuture().awaitUninterruptibly();
 
         Assert.assertTrue(channel.isDone());
-        Assert.assertTrue(channel.isSuccess());
+
+        try {
+            afterMessageReceived.await();
+        } catch (InterruptedException e) {
+            //
+        }
     }
 
-//    @Test
-//    public void testPerformGet() {
-//        HttpRequest request = new DefaultHttpRequest(
-//                HttpVersion.HTTP_1_1, HttpMethod.GET, "http://" + HOSTNAME);
-//
-//        jsonObject = new JSONObject();
-//        jsonObject.put("testkey3", "testvalue3");
-//        content = ChannelBuffers.copiedBuffer(jsonObject.toJSONString(), CharsetUtil.UTF_8);
-//        setHeadersAndContent(request);
-//
-//        logger.info("sending request, and waiting close...");
-//
-//        channel.getChannel().write(request).awaitUninterruptibly();
-//        channel.getChannel().getCloseFuture().awaitUninterruptibly();
-//
-//        Assert.assertTrue(channel.isDone());
-//    }
+    @Test
+    public void testPerformGet() {
+        HttpRequest request = new DefaultHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "http://" + HOSTNAME);
+
+        jsonObject = new JSONObject();
+        jsonObject.put("testkey3", "testvalue3");
+        content = ChannelBuffers.copiedBuffer(jsonObject.toJSONString(), CharsetUtil.UTF_8);
+        setHeadersAndContent(request);
+
+        logger.info("sending request, and waiting close...");
+
+        channel.getChannel().write(request).awaitUninterruptibly();
+        channel.getChannel().getCloseFuture().awaitUninterruptibly();
+
+        Assert.assertTrue(channel.isDone());
+
+        try {
+            afterMessageReceived.await();
+        } catch (InterruptedException e) {
+            //
+        }
+    }
 
     private void setHeadersAndContent(HttpRequest request) {
         request.setHeader(HttpHeaders.Names.HOST, HOSTNAME);
-        request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        request.setHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json");
+        request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+        request.setHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json; charset=UTF-8");
         request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.readableBytes()));
         request.setContent(content);
     }
@@ -136,30 +172,15 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
             logger.info("CONTENT: {}", contentString);
             JSONParser parser = new JSONParser();
             JSONObject parsedJson = (JSONObject) parser.parse(contentString);
-            // check if it returns success code (0)
-            Assert.assertEquals("0", parsedJson.get("responseCode"));
+            // check if it returns success code (0) or fail (1)
+            Assert.assertNotNull(parsedJson.get("error"));
         }
 
-        channel.getChannel().disconnect();
+        afterMessageReceived.countDown();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         e.getCause().printStackTrace();
-    }
-
-    @Override
-    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        logger.info("channel connected: {}", e);
-    }
-
-    @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        logger.info("channel disconnected: {}", e);
-    }
-
-    @Override
-    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        logger.info("channel closed: {}", e);
     }
 }

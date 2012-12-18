@@ -15,27 +15,30 @@ import java.util.List;
 import java.util.Map;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.is100ContinueExpected;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+/**
+ * @see <a href="http://tools.ietf.org/html/draft-pbryan-http-json-resource-03"></a>
+ */
 public class ClusterHttpServerHandler extends SimpleChannelUpstreamHandler {
     protected static final Logger logger = LoggerFactory.getLogger(ClusterHttpServerHandler.class);
 
     private HttpRequest request;
     private final StringBuilder paramBuffer = new StringBuilder();
-    private JSONObject jsonResponse;
+    private final JSONObject jsonResponse = new JSONObject();
 
-    private DistTaskPool distTaskPool = DistTaskPool.defaultInstance();
+    private final DistTaskPool distTaskPool = DistTaskPool.defaultInstance();
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         HttpRequest request = this.request = (HttpRequest) e.getMessage();
-        if (is100ContinueExpected(request)) {
-            send100Continue(e);
-        }
+//        if (is100ContinueExpected(request)) {
+//            send100Continue(e);
+//        }
+
+        HttpResponseStatus status = HttpResponseStatus.BAD_REQUEST;
+        jsonResponse.clear();
 
         ChannelBuffer content = request.getContent();
         if (content.readable()) {
@@ -43,16 +46,18 @@ public class ClusterHttpServerHandler extends SimpleChannelUpstreamHandler {
             if (distTaskPool != null) {
                 TaskData taskData = distTaskPool.offer(jsonTaskData);
                 logger.info ("task created: {}", taskData);
-                // TODO: needs more beautiful way to define JSON responses
-                jsonResponse = new JSONObject();
-                jsonResponse.put("responseCode", "0");
-                jsonResponse.put("responseString", "Task successfully created");
+                jsonResponse.put("error", "0");
+                jsonResponse.put("reason", "Task successfully created");
+                status = HttpResponseStatus.OK;
             }
             else {
-                jsonResponse = new JSONObject();
-                jsonResponse.put("responseCode", "1");
-                jsonResponse.put("responseString", "Distributed task pool is not active");
+                jsonResponse.put("error", "1");
+                jsonResponse.put("reason", "Distributed task pool is not active");
             }
+        }
+        else {
+            jsonResponse.put("error", "2");
+            jsonResponse.put("reason", "Not a valid JSON request");
         }
 
         // for future usage
@@ -71,15 +76,15 @@ public class ClusterHttpServerHandler extends SimpleChannelUpstreamHandler {
             paramBuffer.append("\r\n");
         }
 
-        writeResponse(e);
+        writeResponse(e, status);
     }
 
-    private void writeResponse(MessageEvent e) {
+    private void writeResponse(MessageEvent e, HttpResponseStatus status) {
         boolean keepAlive = isKeepAlive(request);
 
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
         response.setContent(ChannelBuffers.copiedBuffer(jsonResponse.toJSONString(), CharsetUtil.UTF_8));
-        response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+        response.setHeader(CONTENT_TYPE, "application/json; charset=UTF-8");
 
         if (keepAlive) {
             response.setHeader(CONTENT_LENGTH, response.getContent().readableBytes());
@@ -92,10 +97,10 @@ public class ClusterHttpServerHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private static void send100Continue(MessageEvent e) {
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
-        e.getChannel().write(response);
-    }
+//    private static void send100Continue(MessageEvent e) {
+//        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
+//        e.getChannel().write(response);
+//    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
