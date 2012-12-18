@@ -21,7 +21,7 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
     protected static final Logger logger = LoggerFactory.getLogger(ClusterHttpServerTest.class);
 
     private static final String HOSTNAME = "localhost";
-    private static final int PORT = 8080;
+    private static final int PORT = 8090;
 
     private static ClusterHttpServer httpServer;
 
@@ -34,7 +34,7 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        httpServer = new ClusterHttpServer(8080);
+        httpServer = new ClusterHttpServer(PORT);
         httpServer.run();
     }
 

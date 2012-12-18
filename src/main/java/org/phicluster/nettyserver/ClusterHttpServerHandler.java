@@ -19,6 +19,8 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
+ * ClusterHttpServerHandler
+ *
  * @see <a href="http://tools.ietf.org/html/draft-pbryan-http-json-resource-03"></a>
  */
 public class ClusterHttpServerHandler extends SimpleChannelUpstreamHandler {

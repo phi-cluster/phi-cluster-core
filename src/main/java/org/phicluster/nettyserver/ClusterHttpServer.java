@@ -35,7 +35,8 @@ public class ClusterHttpServer {
     }
 
     public void stop() {
-        channel.close().awaitUninterruptibly();
+        if (channel != null)
+            channel.close().awaitUninterruptibly();
 
         logger.info("http server stopped");
     }
