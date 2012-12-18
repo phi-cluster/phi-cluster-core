@@ -95,8 +95,7 @@ public class ZKInit implements Watcher {
     
     public static void main(String[] args) throws Exception {
         PropertyConfigurator.configure("log4j.properties");
-        //ZKInit zkinit = new ZKInit("15.185.228.21:2181,15.185.228.8:2181,15.185.227.26:2181");
-        ZKInit zkinit = new ZKInit("15.185.228.137:2181");
+        ZKInit zkinit = new ZKInit("localhost:2181");
         while (zkinit.zkState() != States.CONNECTED) {
             System.out.print('.');
             Thread.sleep(1000);

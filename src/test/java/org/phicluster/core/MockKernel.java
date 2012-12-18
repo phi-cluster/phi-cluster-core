@@ -9,7 +9,6 @@ import java.util.List;
 
 public class MockKernel extends Kernel {
     public static final String ZOOKEEPER_FOR_UNIT_TEST = "localhost:2181";
-    //    public static final String ZOOKEEPER_FOR_UNIT_TEST = "15.185.228.137:2181";
     public static final String GEARMAN_SERVER_IP = "localhost";
     public static final int GEARMAN_SERVER_PORT = 4730;
 
