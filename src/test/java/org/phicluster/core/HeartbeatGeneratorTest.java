@@ -1,21 +1,15 @@
 package org.phicluster.core;
 
-import static org.junit.Assert.*;
+import org.apache.zookeeper.KeeperException;
+import org.junit.*;
+import org.phicluster.core.util.ByteUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.zookeeper.KeeperException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.phicluster.core.HeartbeatGenerator;
-import org.phicluster.core.ZKInit;
-import org.phicluster.core.util.ByteUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.*;
 
 
 public class HeartbeatGeneratorTest {
@@ -31,7 +25,7 @@ public class HeartbeatGeneratorTest {
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        zkInit = CoreSetup.initZookeeper(MockKernel.ZOOKEEPER_FOR_UNIT_TEST, true);
+        zkInit = CoreSetup.initZookeeper(true);
 
         logger.info("creating kernel...");
         kernel = CoreSetup.createMockKernel(1);

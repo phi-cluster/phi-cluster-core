@@ -1,25 +1,16 @@
 package org.phicluster.core;
 
-import static org.junit.Assert.*;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.data.Stat;
+import org.junit.*;
+import org.phicluster.core.util.ByteUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.data.Stat;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.phicluster.core.DistJobState;
-import org.phicluster.core.Job;
-import org.phicluster.core.JobState;
-import org.phicluster.core.JobStateData;
-import org.phicluster.core.ZKInit;
-import org.phicluster.core.util.ByteUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.*;
 
 
 public class DistJobStateTest {
@@ -29,7 +20,7 @@ public class DistJobStateTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        zkInit = CoreSetup.initZookeeper(MockKernel.ZOOKEEPER_FOR_UNIT_TEST, true);
+        zkInit = CoreSetup.initZookeeper(true);
         // create the default instance
         DistJobState djs = new DistJobState(zkInit.zk);
         DistJobState.defaultInstance = djs;

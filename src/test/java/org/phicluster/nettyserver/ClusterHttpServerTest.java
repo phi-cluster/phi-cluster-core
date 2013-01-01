@@ -10,6 +10,8 @@ import org.jboss.netty.util.CharsetUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.*;
+import org.phicluster.config.Config;
+import org.phicluster.config.ConfigLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +23,8 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
     protected static final Logger logger = LoggerFactory.getLogger(ClusterHttpServerTest.class);
 
     private static final String HOSTNAME = "localhost";
-    private static final int PORT = 8090;
 
+    private static Config config;
     private static ClusterHttpServer httpServer;
 
     private ClientBootstrap bootstrap;
@@ -34,7 +36,8 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        httpServer = new ClusterHttpServer(PORT);
+        config = ConfigLoader.getInstance().getConfig();
+        httpServer = new ClusterHttpServer(config.getHttpServerPort());
         httpServer.run();
     }
 
@@ -57,10 +60,10 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
         bootstrap.getPipeline().addLast("codec", new HttpClientCodec());
         bootstrap.getPipeline().addLast("aggregator", new HttpChunkAggregator(1048576));
         bootstrap.getPipeline().addLast("handler", this);
-        channel = bootstrap.connect(new InetSocketAddress(HOSTNAME, PORT));
+        channel = bootstrap.connect(new InetSocketAddress(HOSTNAME, config.getHttpServerPort()));
         channel.awaitUninterruptibly();
 
-        logger.info("connected to server...");
+        logger.info("connected to server.");
     }
 
     @After
@@ -177,6 +180,8 @@ public class ClusterHttpServerTest extends SimpleChannelUpstreamHandler {
         }
 
         afterMessageReceived.countDown();
+
+        logger.info("message processed.");
     }
 
     @Override

@@ -1,17 +1,18 @@
 package org.phicluster.core;
 
-import static org.junit.Assert.fail;
-
 import org.apache.zookeeper.ZooKeeper.States;
-import org.phicluster.core.Kernel;
-import org.phicluster.core.ZKInit;
+import org.phicluster.config.ConfigLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.fail;
 
 public class CoreSetup {
     protected static final Logger logger = LoggerFactory.getLogger(CoreSetup.class);
     
-    public static ZKInit initZookeeper(String zookeeper, boolean clean) throws Exception {
+    public static ZKInit initZookeeper(boolean clean) throws Exception {
+        String zookeeper = ConfigLoader.getInstance().getConfig().getZookeeperServer();
+
         ZKInit zkInit = new ZKInit(zookeeper);
         boolean zkInitConnected = false;
         long timeout = 0l;

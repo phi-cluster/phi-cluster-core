@@ -1,19 +1,16 @@
 package org.phicluster.core;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
-
+import org.phicluster.config.Config;
+import org.phicluster.config.ConfigLoader;
 import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -24,6 +21,7 @@ public class Kernel implements Watcher {
     protected final int replicationFactor;
     protected final String zookeeperServers;
     protected final int sessionTimeout;
+    protected final Config config = ConfigLoader.getInstance().getConfig();
     
     protected ZooKeeper zk;
     protected ArrayList<ACL> acl = ZooDefs.Ids.OPEN_ACL_UNSAFE;
@@ -73,7 +71,7 @@ public class Kernel implements Watcher {
         
     protected void initHeartbeatModule() {
         String path = Constants.ZN_HEARTBEAT + "/" + Constants.PREFIX_NODE + nodeId;
-        heartbeadGenerator = new HeartbeatGenerator(zk, path, Constants.HEARTBEAT_INTERVAL);
+        heartbeadGenerator = new HeartbeatGenerator(zk, path, config.getAccrualHeartbeatInterval());
         Thread t = new Thread(heartbeadGenerator);
         t.start();
         logger.info("heartbeat generator has started (path: {})", path);

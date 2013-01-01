@@ -1,35 +1,17 @@
 package org.phicluster.core;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.ZooKeeper.States;
-import org.apache.zookeeper.ZooKeeper.States;
 import org.apache.zookeeper.data.Stat;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.phicluster.core.Constants;
-import org.phicluster.core.DistTaskPool;
-import org.phicluster.core.ZKInit;
-import org.phicluster.core.Kernel.KernelState;
-import org.phicluster.core.task.PhiTask;
+import org.junit.*;
+import org.phicluster.core.task.TaskData;
 import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 
 public class DistTaskPoolTest {
@@ -46,7 +28,7 @@ public class DistTaskPoolTest {
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        zkInit = CoreSetup.initZookeeper(MockKernel.ZOOKEEPER_FOR_UNIT_TEST, true);
+        zkInit = CoreSetup.initZookeeper(true);
 
         // creating kernels for three nodes
         logger.info("creating kernels of three nodes...");
@@ -249,7 +231,7 @@ public class DistTaskPoolTest {
     public void testOffer() {
         String jsonTaskData = "unittest-task";
         try {
-            PhiTask td = distTaskPool.offer(jsonTaskData);
+            TaskData td = distTaskPool.offer(jsonTaskData);
             logger.info("task created, id: {}", td.taskId);
 
             String expectedPath = Constants.ZN_TASK_DATA_PATH_WITH_PREFIX + String.format("%010d", td.taskId);
@@ -282,9 +264,9 @@ public class DistTaskPoolTest {
         
         // test plain-vanilla happy path
         logger.info("test plain-vanilla happy path...");
-        List<PhiTask> tasks = createTasks(5);
+        List<TaskData> tasks = createTasks(5);
         
-        PhiTask taskTaken = null;
+        TaskData taskTaken = null;
         try {
             taskTaken = distTaskPool.take(null);
         } catch (Exception e) {
@@ -328,7 +310,7 @@ public class DistTaskPoolTest {
         logger.info("happy path test done.");
         
         logger.info("test when first taken task is already replicated to one of the nodes");
-        PhiTask nextTask = tasks.get(1); // next task in the sorted list
+        TaskData nextTask = tasks.get(1); // next task in the sorted list
         
         // simulate replication by another node
         final String repPath = "/tasks/secondary/node-2/task-" + nextTask.taskId;
@@ -342,7 +324,7 @@ public class DistTaskPoolTest {
         
         // attempt to take a task
         try {
-            PhiTask td = distTaskPool.take(null);
+            TaskData td = distTaskPool.take(null);
             expectedTaskId = tasks.get(2).taskId;
             assertNotNull("no task taken while expecting task: " + expectedTaskId, td);
             assertEquals(expectedTaskId, td.taskId);
@@ -384,7 +366,7 @@ public class DistTaskPoolTest {
         }
         
         try {
-            PhiTask td = distTaskPool.take(null);
+            TaskData td = distTaskPool.take(null);
             long expected = tasks.get(4).taskId;
             assertNotNull("no task returned from dist task pool while expected: " + expected, td);
             assertEquals(expected, td.taskId);
@@ -426,11 +408,11 @@ public class DistTaskPoolTest {
         ensureEmptyQueue();
         
         logger.info("creating tasks for test");
-        List<PhiTask> tasks = createTasks(2);
+        List<TaskData> tasks = createTasks(2);
         
         // happy path test
         logger.info("test-1 - happy path");
-        PhiTask taskTaken = null;
+        TaskData taskTaken = null;
         try {
             taskTaken = distTaskPool.take(null);
         } catch (Exception e) {
@@ -511,11 +493,11 @@ public class DistTaskPoolTest {
         }
     }
     
-    private List<PhiTask> createTasks(int numberOfTasks) {
-        List<PhiTask> tasks = new ArrayList<PhiTask>();
+    private List<TaskData> createTasks(int numberOfTasks) {
+        List<TaskData> tasks = new ArrayList<TaskData>();
         for (int i = 0; i < numberOfTasks; i++) {
             String jsonTaskData = "unittest-disttaskpool-task-" + i;
-            PhiTask td = null;
+            TaskData td = null;
             try {
                 td = distTaskPool.offer(jsonTaskData);
                 tasks.add(td);
@@ -529,9 +511,9 @@ public class DistTaskPoolTest {
         return tasks;
     }
 
-    private void cleanUpTasks(List<PhiTask> tasks) {
+    private void cleanUpTasks(List<TaskData> tasks) {
         try {
-            for (PhiTask td : tasks) {
+            for (TaskData td : tasks) {
                 for (int i = 1; i <= 3; i++) {
                     String p = "/tasks/secondary/node-"+i+"/task-" + td.taskId;
                     deleteIfExists(p);

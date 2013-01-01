@@ -1,30 +1,19 @@
 package org.phicluster.core;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.phicluster.core.AccrualFailureDetector;
-import org.phicluster.core.Constants;
-import org.phicluster.core.DistTaskPool;
-import org.phicluster.core.ZKInit;
-import org.phicluster.core.AccrualFailureDetector.HeartbeatMiss;
+import org.junit.*;
 import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 
 public class AccrualFailureDetectorTest {
@@ -39,7 +28,7 @@ public class AccrualFailureDetectorTest {
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        zkInit = CoreSetup.initZookeeper(MockKernel.ZOOKEEPER_FOR_UNIT_TEST, true);
+        zkInit = CoreSetup.initZookeeper(true);
         
         logger.info("creating kernels...");
         for (int i = 1; i <= NUMBER_OF_KERNELS; i++) {

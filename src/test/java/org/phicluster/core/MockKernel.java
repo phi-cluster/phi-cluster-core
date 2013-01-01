@@ -2,13 +2,14 @@ package org.phicluster.core;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.data.Stat;
+import org.phicluster.config.ConfigLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class MockKernel extends Kernel {
-    public static final String ZOOKEEPER_FOR_UNIT_TEST = "localhost:2181";
+//    public static final String ZOOKEEPER_FOR_UNIT_TEST = "localhost:2181";
     public static final String GEARMAN_SERVER_IP = "localhost";
     public static final int GEARMAN_SERVER_PORT = 4730;
 
@@ -20,9 +21,9 @@ public class MockKernel extends Kernel {
     protected List<String> paths = null;
         
     protected MockKernel(int nodeId) {
-        super(nodeId, 
-              1, 
-              ZOOKEEPER_FOR_UNIT_TEST,
+        super(nodeId,
+              1,
+              ConfigLoader.getInstance().getConfig().getZookeeperServer(),
               3000,
               null);
     }
