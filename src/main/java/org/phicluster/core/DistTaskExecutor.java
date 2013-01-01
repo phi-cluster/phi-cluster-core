@@ -2,7 +2,7 @@ package org.phicluster.core;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.phicluster.core.task.TaskData;
+import org.phicluster.core.task.PhiTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,20 +34,20 @@ public abstract class DistTaskExecutor implements Runnable, Watcher {
             try {
                 if (suspended) {
                     synchronized (this) {
-                        state = State.STOPPED;
+                        state = State.SUSPENDED;
                         this.wait();
                     }
                     continue;
                 }
                 
-                TaskData taskData = distTaskPool.take(this);
-                if (taskData == null) {
+                PhiTask phiTask = distTaskPool.take(this);
+                if (phiTask == null) {
                     synchronized (this) {
                         this.wait(1000); // time out in 1 second in case watch event is missed
                         continue;
                     }
                 }
-                executeTask(taskData);
+                executeTask(phiTask);
             } catch (Exception e) {
                 logger.error("exception while executing task: {}", e);
                 e.printStackTrace();
@@ -75,7 +75,7 @@ public abstract class DistTaskExecutor implements Runnable, Watcher {
     }
 
     
-    protected abstract void executeTask(TaskData task);
+    protected abstract void executeTask(PhiTask task);
     
     @Override
     public void process(WatchedEvent event) {

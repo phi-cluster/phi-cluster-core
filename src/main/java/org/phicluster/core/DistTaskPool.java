@@ -13,7 +13,7 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
-import org.phicluster.core.task.TaskData;
+import org.phicluster.core.task.PhiTask;
 import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class DistTaskPool {
         return this.nodeId;
     }
     
-    public TaskData take(Watcher watcher) throws Exception {
+    public PhiTask take(Watcher watcher) throws Exception {
         List<String> children = zk.getChildren(Constants.ZN_TASK_QUEUE, watcher);
         if (children.isEmpty()) {
             return null; // no tasks in the queue
@@ -104,7 +104,7 @@ public class DistTaskPool {
             // the task data
             String taskDataPath = Constants.ZN_TASK_DATA_PATH_WITH_PREFIX + String.format("%010d", taskId);
             byte[] taskData = zk.getData(taskDataPath, false, null);
-            return new TaskData(taskId, taskData);
+            return new PhiTask(taskId, taskData);
         }
         
         return null;
@@ -193,13 +193,13 @@ public class DistTaskPool {
     }
     
     
-    public TaskData offer(String jsonTaskData) throws Exception {
+    public PhiTask offer(String jsonTaskData) throws Exception {
         byte[] taskData = jsonTaskData.getBytes();
         String taskName = zk.create(Constants.ZN_TASK_DATA_PATH_WITH_PREFIX, 
                 taskData, acl, CreateMode.PERSISTENT_SEQUENTIAL);
         String suffix = taskName.substring(Constants.ZN_TASK_DATA_PATH_WITH_PREFIX.length());
         Long taskId = new Long(suffix);
-        TaskData task = new TaskData(taskId, taskData);
+        PhiTask task = new PhiTask(taskId, taskData);
         
         // create task in the queue
         createTaskInQueue(taskId);

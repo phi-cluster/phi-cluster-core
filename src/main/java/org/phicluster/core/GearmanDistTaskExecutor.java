@@ -10,9 +10,8 @@ import org.gearman.GearmanJobEvent;
 import org.gearman.GearmanJobEventCallback;
 import org.gearman.GearmanServer;
 import org.gearman.GearmanWorker;
-import org.phicluster.core.task.TaskCode;
-import org.phicluster.core.task.TaskData;
-import org.phicluster.core.task.request.RequestCode;
+import org.phicluster.core.task.PhiTask;
+import org.phicluster.core.task.gearman.TaskCode;
 import org.phicluster.core.util.ByteUtil;
 import org.phicluster.core.util.Parser;
 import org.slf4j.Logger;
@@ -53,17 +52,7 @@ public class GearmanDistTaskExecutor extends DistTaskExecutor implements Gearman
                              tc, e.getMessage());
                 e.printStackTrace();
             }
-        }
-        
-        for (RequestCode rc : RequestCode.values()) {
-            try {
-                createWorkerForFunction(rc.gearmanFunctionName(), rc.newWorkerInstance());
-            } catch (InstantiationException | IllegalAccessException e) {
-                logger.error("couldn't instantiate gearman worker for request: {}, exception: {}", 
-                             rc, e.getMessage());
-                e.printStackTrace();
-            }
-        }
+        }        
     }
     
     protected GearmanServer createGearmanServer(String host, int port) {
@@ -93,7 +82,7 @@ public class GearmanDistTaskExecutor extends DistTaskExecutor implements Gearman
     
     
     @Override
-    protected void executeTask(TaskData task) {
+    protected void executeTask(PhiTask task) {
         String jsonTaskData = new String(task.taskData);
         int tc = Parser.parseIntField(jsonTaskData, "task-data.task-code");
         TaskCode taskCode = TaskCode.code(tc);

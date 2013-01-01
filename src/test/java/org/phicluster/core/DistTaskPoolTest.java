@@ -26,7 +26,7 @@ import org.phicluster.core.Constants;
 import org.phicluster.core.DistTaskPool;
 import org.phicluster.core.ZKInit;
 import org.phicluster.core.Kernel.KernelState;
-import org.phicluster.core.task.TaskData;
+import org.phicluster.core.task.PhiTask;
 import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,7 +249,7 @@ public class DistTaskPoolTest {
     public void testOffer() {
         String jsonTaskData = "unittest-task";
         try {
-            TaskData td = distTaskPool.offer(jsonTaskData);
+            PhiTask td = distTaskPool.offer(jsonTaskData);
             logger.info("task created, id: {}", td.taskId);
 
             String expectedPath = Constants.ZN_TASK_DATA_PATH_WITH_PREFIX + String.format("%010d", td.taskId);
@@ -282,9 +282,9 @@ public class DistTaskPoolTest {
         
         // test plain-vanilla happy path
         logger.info("test plain-vanilla happy path...");
-        List<TaskData> tasks = createTasks(5);
+        List<PhiTask> tasks = createTasks(5);
         
-        TaskData taskTaken = null;
+        PhiTask taskTaken = null;
         try {
             taskTaken = distTaskPool.take(null);
         } catch (Exception e) {
@@ -328,7 +328,7 @@ public class DistTaskPoolTest {
         logger.info("happy path test done.");
         
         logger.info("test when first taken task is already replicated to one of the nodes");
-        TaskData nextTask = tasks.get(1); // next task in the sorted list
+        PhiTask nextTask = tasks.get(1); // next task in the sorted list
         
         // simulate replication by another node
         final String repPath = "/tasks/secondary/node-2/task-" + nextTask.taskId;
@@ -342,7 +342,7 @@ public class DistTaskPoolTest {
         
         // attempt to take a task
         try {
-            TaskData td = distTaskPool.take(null);
+            PhiTask td = distTaskPool.take(null);
             expectedTaskId = tasks.get(2).taskId;
             assertNotNull("no task taken while expecting task: " + expectedTaskId, td);
             assertEquals(expectedTaskId, td.taskId);
@@ -384,7 +384,7 @@ public class DistTaskPoolTest {
         }
         
         try {
-            TaskData td = distTaskPool.take(null);
+            PhiTask td = distTaskPool.take(null);
             long expected = tasks.get(4).taskId;
             assertNotNull("no task returned from dist task pool while expected: " + expected, td);
             assertEquals(expected, td.taskId);
@@ -426,11 +426,11 @@ public class DistTaskPoolTest {
         ensureEmptyQueue();
         
         logger.info("creating tasks for test");
-        List<TaskData> tasks = createTasks(2);
+        List<PhiTask> tasks = createTasks(2);
         
         // happy path test
         logger.info("test-1 - happy path");
-        TaskData taskTaken = null;
+        PhiTask taskTaken = null;
         try {
             taskTaken = distTaskPool.take(null);
         } catch (Exception e) {
@@ -511,11 +511,11 @@ public class DistTaskPoolTest {
         }
     }
     
-    private List<TaskData> createTasks(int numberOfTasks) {
-        List<TaskData> tasks = new ArrayList<TaskData>();
+    private List<PhiTask> createTasks(int numberOfTasks) {
+        List<PhiTask> tasks = new ArrayList<PhiTask>();
         for (int i = 0; i < numberOfTasks; i++) {
             String jsonTaskData = "unittest-disttaskpool-task-" + i;
-            TaskData td = null;
+            PhiTask td = null;
             try {
                 td = distTaskPool.offer(jsonTaskData);
                 tasks.add(td);
@@ -529,9 +529,9 @@ public class DistTaskPoolTest {
         return tasks;
     }
 
-    private void cleanUpTasks(List<TaskData> tasks) {
+    private void cleanUpTasks(List<PhiTask> tasks) {
         try {
-            for (TaskData td : tasks) {
+            for (PhiTask td : tasks) {
                 for (int i = 1; i <= 3; i++) {
                     String p = "/tasks/secondary/node-"+i+"/task-" + td.taskId;
                     deleteIfExists(p);

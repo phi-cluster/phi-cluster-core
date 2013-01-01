@@ -7,7 +7,7 @@ import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.util.CharsetUtil;
 import org.json.simple.JSONObject;
 import org.phicluster.core.DistTaskPool;
-import org.phicluster.core.task.TaskData;
+import org.phicluster.core.task.PhiTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +46,8 @@ public class ClusterHttpServerHandler extends SimpleChannelUpstreamHandler {
         if (content.readable()) {
             String jsonTaskData = content.toString(CharsetUtil.UTF_8);
             if (distTaskPool != null) {
-                TaskData taskData = distTaskPool.offer(jsonTaskData);
-                logger.info ("task created: {}", taskData);
+                PhiTask phiTask = distTaskPool.offer(jsonTaskData);
+                logger.info ("task created: {}", phiTask);
                 jsonResponse.put("error", "0");
                 jsonResponse.put("reason", "Task successfully created");
                 status = HttpResponseStatus.OK;
