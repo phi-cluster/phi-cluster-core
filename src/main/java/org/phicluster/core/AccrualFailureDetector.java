@@ -25,7 +25,7 @@ public class AccrualFailureDetector implements Runnable {
     protected final Map<Integer, HeartbeatMiss> heartbeatMisses;
     
     private boolean detectFailures;
-    private boolean suspended;
+    private volatile boolean suspended;
     
     public enum State {INSTANTIATED, RUNNING, SUSPENDED, STOPPED};
     protected State state;
@@ -54,8 +54,10 @@ public class AccrualFailureDetector implements Runnable {
             try {
                 if (suspended) {
                     synchronized (this) {
-                        state = State.SUSPENDED;
-                        this.wait();
+                        while (suspended) {
+                            state = State.SUSPENDED;
+                            this.wait();
+                        }
                     }
                     continue;
                 }
