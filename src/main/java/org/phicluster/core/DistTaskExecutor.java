@@ -13,7 +13,7 @@ public abstract class DistTaskExecutor implements Runnable, Watcher {
     protected final DistTaskPool distTaskPool;
 
     private boolean executeTasks;
-    private boolean suspended;
+    private volatile boolean suspended;
     
     public enum State { INSTANTIATED, RUNNING, SUSPENDED, STOPPED };
     protected State state;
@@ -34,8 +34,10 @@ public abstract class DistTaskExecutor implements Runnable, Watcher {
             try {
                 if (suspended) {
                     synchronized (this) {
-                        state = State.SUSPENDED;
-                        this.wait();
+                        while (suspended) {
+                            state = State.SUSPENDED;
+                            this.wait();
+                        }
                     }
                     continue;
                 }
