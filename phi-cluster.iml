@@ -12,6 +12,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="org.apache.zookeeper:zookeeper:3.4.5" level="project" />
+    <orderEntry type="library" name="commons-configuration:commons-configuration:1.7" level="project" />
+    <orderEntry type="library" name="java-gearman-service-0.6.5" level="application" />
+    <orderEntry type="library" name="com.googlecode.json-simple:json-simple:1.1.1" level="project" />
   </component>
 </module>
 

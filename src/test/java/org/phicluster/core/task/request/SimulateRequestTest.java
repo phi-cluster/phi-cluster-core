@@ -6,7 +6,7 @@ import org.phicluster.core.CoreSetup;
 import org.phicluster.core.DistTaskPool;
 import org.phicluster.core.MockKernel;
 import org.phicluster.core.ZKInit;
-import org.phicluster.core.task.TaskData;
+import org.phicluster.core.task.PhiTask;
 import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class SimulateRequestTest {
         Gearman gearman = Gearman.createGearman();
         GearmanServer server = gearman.createGearmanServer(MockKernel.GEARMAN_SERVER_IP, 
                                                            MockKernel.GEARMAN_SERVER_PORT);
-        String functionName = RequestCode.SIMULATE_REQUEST.gearmanFunctionName(); 
+//        String functionName = RequestCode.SIMULATE_REQUEST.gearmanFunctionName();
 
         SimulateRequestRegistrar registrar = new SimulateRequestRegistrar();
         Thread t = new Thread(registrar);
@@ -79,7 +79,7 @@ public class SimulateRequestTest {
         client.addServer(server);
         String jsonString = "{\"request\":{\"stages\":3,\"sleep\":5000}}";
         
-        GearmanJobReturn jobReturn = client.submitJob(functionName, jsonString.getBytes());
+        GearmanJobReturn jobReturn = client.submitJob(null, jsonString.getBytes());
         while (!jobReturn.isEOF()) {
             GearmanJobEvent event = null;
             try {
@@ -99,7 +99,7 @@ public class SimulateRequestTest {
         }
         
         try {
-            TaskData task = DistTaskPool.defaultInstance().take(null);
+            PhiTask task = DistTaskPool.defaultInstance().take(null);
             assertNotNull(task);
             logger.info("task id: {}, task data: {}", task.taskId, new String(task.taskData));
         } catch (Exception e) {
@@ -115,7 +115,7 @@ public class SimulateRequestTest {
     private static class SimulateRequestRegistrar implements Runnable {
         private Gearman gearman = Gearman.createGearman();
         private GearmanWorker worker;
-        private String functionName = RequestCode.SIMULATE_REQUEST.gearmanFunctionName(); 
+//        private String functionName = RequestCode.SIMULATE_REQUEST.gearmanFunctionName();
 
         protected boolean registrationComplete = false;
 
@@ -124,7 +124,7 @@ public class SimulateRequestTest {
             GearmanServer server = gearman.createGearmanServer(MockKernel.GEARMAN_SERVER_IP, 
                                                                MockKernel.GEARMAN_SERVER_PORT);
             worker = gearman.createGearmanWorker();
-            worker.addFunction(functionName, new SimulateRequest());
+//            worker.addFunction(functionName, new SimulateRequest());
             worker.addServer(server);
             logger.info("worker added to gearman nettyserver");
             registrationComplete = true;
@@ -132,7 +132,7 @@ public class SimulateRequestTest {
         
         public void shutdown() {
             if (worker != null) {
-                worker.removeFunction(functionName);
+//                worker.removeFunction(functionName);
             }
             if (gearman != null) {
                 gearman.shutdown();

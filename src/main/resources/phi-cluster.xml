@@ -1,0 +1,15 @@
+<phi-cluster>
+    <zookeeper>
+        <host>localhost</host>
+        <port>2181</port>
+        <replication-factor>3</replication-factor>
+    </zookeeper>
+    <httpserver>
+        <host>localhost</host>
+        <port>8091</port>
+    </httpserver>
+    <accrual-failure-detector>
+        <threshold>3</threshold>
+        <heartbeat-interval>3000</heartbeat-interval>
+    </accrual-failure-detector>
+</phi-cluster>

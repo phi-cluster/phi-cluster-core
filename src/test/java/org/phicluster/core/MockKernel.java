@@ -17,6 +17,7 @@ public class MockKernel extends Kernel {
 
     public MockAccrualFailureDetector mockAccrualFailureDetector;
     protected DistTaskPool distTaskPool;
+    protected DistTaskExecutor distTaskExecutor;
     
     protected List<String> paths = null;
         
@@ -51,10 +52,16 @@ public class MockKernel extends Kernel {
         DistJobState djs = new DistJobState(zk);
         DistJobState.defaultInstance = djs;
 
+        // simple task executor
+        distTaskExecutor = new SimpleDistTaskExecutor(distTaskPool);
+        Thread t = new Thread(distTaskExecutor);
+        t.start();
     }
         
     public void tearDown() {
         logger.info("tearing down the kernel of node-{}, deleting zookeeper paths...", nodeId);
+        if (distTaskExecutor != null)
+            distTaskExecutor.stopExecutor();
         if (paths != null) {
             for (String path : paths) {
                 try {
