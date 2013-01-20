@@ -92,13 +92,13 @@ public class SimpleTaskExecutorTest {
         logger.info("done");
     }
 
+    // TODO: more test cases are needed
+
     private String getJsonRequestString(int tc) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("task-code", tc);
         jsonObject.put("job-id", 1);
         return jsonObject.toJSONString();
     }
-
-    private final Object waitor = new Object();
 
 }

@@ -20,6 +20,7 @@ public class SimpleTask implements PhiRunnable {
         logger.info("starting simple task...");
         if (data == null) {
             logger.error("taskData is null!");
+            return;
         }
         String jsonTaskData = new String(data);
         JSONParser parser = new JSONParser();
