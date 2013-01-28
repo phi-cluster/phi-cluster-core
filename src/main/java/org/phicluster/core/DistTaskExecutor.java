@@ -6,7 +6,6 @@ import org.phicluster.core.task.PhiTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public abstract class DistTaskExecutor implements Runnable, Watcher {
     protected static final Logger logger = LoggerFactory.getLogger(DistTaskExecutor.class);
 
@@ -16,7 +15,7 @@ public abstract class DistTaskExecutor implements Runnable, Watcher {
     private volatile boolean suspended;
     
     public enum State { INSTANTIATED, RUNNING, SUSPENDED, STOPPED };
-    protected State state;
+    private State state;
     
     protected DistTaskExecutor(DistTaskPool distTaskPool) {
         this.distTaskPool = distTaskPool;

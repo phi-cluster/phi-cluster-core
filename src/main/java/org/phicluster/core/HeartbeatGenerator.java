@@ -7,8 +7,6 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.phicluster.core.util.ByteUtil;
 
-
-
 public class HeartbeatGenerator implements Runnable, Watcher {
 
     protected final ZooKeeper zk;
@@ -16,10 +14,10 @@ public class HeartbeatGenerator implements Runnable, Watcher {
     protected final int interval; // in milliseconds
 
     private boolean generateHeartbeats;
-    private boolean suspended;
+    private volatile boolean suspended;
     
     public enum State {INSTANTIATED, RUNNING, SUSPENDED, STOPPED};
-    protected State state;
+    private State state;
     
     public HeartbeatGenerator(ZooKeeper zk, String heartbeatPath, int interval) {
         this.zk = zk;
@@ -38,8 +36,10 @@ public class HeartbeatGenerator implements Runnable, Watcher {
             try {
                 if (suspended) {
                     synchronized (this) {
-                        state = State.SUSPENDED;
-                        this.wait();
+                        while (suspended) {
+                            state = State.SUSPENDED;
+                            this.wait();
+                        }
                     }
                     continue;
                 }

@@ -12,8 +12,6 @@ import org.phicluster.core.util.ByteUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 public class AccrualFailureDetector implements Runnable {
     protected static final Logger logger = LoggerFactory.getLogger(AccrualFailureDetector.class);
     
@@ -28,7 +26,7 @@ public class AccrualFailureDetector implements Runnable {
     private volatile boolean suspended;
     
     public enum State {INSTANTIATED, RUNNING, SUSPENDED, STOPPED};
-    protected State state;
+    private volatile State state;
 
     
     public AccrualFailureDetector(int nodeId, 
