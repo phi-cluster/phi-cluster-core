@@ -23,7 +23,7 @@ All or a subset of the nodes in phi-cluster run Zookeeper service that phi-clust
 
 Phi-cluster admits tasks into the cluster and puts them into distributed task pool to make them available for cluster nodes to pick. Cluster nodes attempt to pick an available task in the task pool's queue, and only one of them succeeds. Synchronization is provided through Zookeeper service, which is a majority based consensus system based on Paxos algorithm. 
 
-Part of taking a task from task pool, the node that is going execute the task designates a number of other nodes that would attempt to reclaim the task if the node failed before or during the execution of the task. This is a similar idea to replication but here task is not replicated, rather, its id is put into a secondary task queue of some other nodes.
+Part of taking a task from task pool, the node that is going execute the task designates a number of other nodes that would attempt to reclaim the task if the node failed before or during the execution of the task. This is a similar idea to replication but here task is not replicated, rather, its id is put into a secondary task queue of some other nodes. The figure below shows a node taking a task from distributed queue.
 
 ![ScreenShot](http://denizdemir.files.wordpress.com/2013/01/phi-cluster-task-replication.png)
 
