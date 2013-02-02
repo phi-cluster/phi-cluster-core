@@ -19,7 +19,7 @@ The goal of phi-cluster is to provide a simple, extensible framework to implemen
 2. Decentralized failure detector based on The Phi Accrual Failure Detector technique.
 3. Simple, pluggable task definition, and task executor.
 
-All or a subset of the nodes in phi-cluster run Zookeeper service that phi-cluster uses to keep task data/state and node heartbeats for failure detector, which is based on The Phi-Accrual Failure Detector where each node decides whether the nodes of interest failed based on a configured heartbeat-miss threshold.
+All or a subset of the nodes in phi-cluster run Zookeeper service that phi-cluster uses to keep task data/state and node heartbeats for failure detector, which is based on The Phi-Accrual Failure Detector where each node decides whether the nodes of interest failed based on a probabilistic measure accrued over time. In phi-cluster, it is currently a simple configurable heartbeat-miss threshold.
 
 Phi-cluster admits tasks into the cluster and puts them into distributed task pool to make them available for cluster nodes to pick. Cluster nodes attempt to pick an available task in the task pool's queue, and only one of them succeeds. Synchronization is provided through Zookeeper service, which is a majority based consensus system based on Paxos algorithm. 
 
